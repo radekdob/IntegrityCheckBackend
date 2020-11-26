@@ -6,6 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
 
+import javax.tools.FileObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,13 +24,18 @@ public class HashService {
         this.configuration = configuration;
     }
 
-    public boolean md5Hash(String fileName, String hashValue) throws  IOException {
+    public boolean md5Hash(String fileName, String hashValue) throws IOException {
 
-        File file = FileUtils.getFile(configuration.getWorkingDirectory(), fileName);
-        byte[] bytesOfFile =   FileUtils.readFileToByteArray(file);
-        byte[] md5Hash = DigestUtils.md5(bytesOfFile);
-        String stringHash = Hex.encodeHexString(md5Hash);
-        return stringHash.equalsIgnoreCase(hashValue);
+        var path = Paths.get(configuration.getWorkingDirectory() + fileName);
+        if (Files.exists(path)) {
+            File file = FileUtils.getFile(configuration.getWorkingDirectory(), fileName);
+            byte[] bytesOfFile = FileUtils.readFileToByteArray(file);
+            byte[] md5Hash = DigestUtils.md5(bytesOfFile);
+            String stringHash = Hex.encodeHexString(md5Hash);
+            return stringHash.equalsIgnoreCase(hashValue);
+        } else {
+            return false;
+        }
     }
 
 }

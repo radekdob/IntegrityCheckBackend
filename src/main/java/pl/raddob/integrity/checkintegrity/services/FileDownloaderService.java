@@ -27,41 +27,39 @@ public class FileDownloaderService {
 
     public String downloadFile(String addressUrl) throws IOException {
 
+        // Nawiązanie połączenia w celu zdobycia rozszerzenia pliku
         URL url = new URL(addressUrl);
         URLConnection con = url.openConnection();
 
+        // Próba zdobycia rozszerzenia pliku z nagłówka adresu url
         String fileNameHeader = con.getHeaderField("Content-Disposition");
+        // Próba zdobycia rozszerzenia pliku z ciągu znaków adresu url
         String fileExtensionFromUrlString = FilenameUtils.getExtension(addressUrl);
-        UUID uuid;
 
+        UUID uuid;
         String fileNameSuffix;
         if (fileNameHeader != null && fileNameHeader.contains("filename=")) {
             fileNameSuffix = fileNameHeader.substring(fileNameHeader.indexOf("filename=") + 9);
-            System.out.println("weszlo z headera" + fileNameSuffix);
         } else if (!Strings.isNullOrEmpty(fileExtensionFromUrlString) && !fileExtensionFromUrlString.isBlank()) {
             fileNameSuffix = FilenameUtils.getBaseName(addressUrl) + "." + fileExtensionFromUrlString;
-            System.out.println("weszlo z linku " + fileNameSuffix);
         } else {
+            // Proba zdobycia rozszerzenia pliku z adresu url lub nagłówka nie powiodła się
+            // Dla adresu typu https://onet.pl/samplefile.exe/download powyższe metody nie zadziałają
+            // aby zdobyć rozszerzenie z powyższego adresu wykorzystać trzeba poniższy serwis
             String foundExtension = findExtensionFromFileNameService.findExtension(addressUrl);
             uuid = UUID.randomUUID();
             if (!foundExtension.isEmpty()) {
-                fileNameSuffix = uuid.toString() + foundExtension;
+                fileNameSuffix = uuid.toString() + foundExtension; //nadanie losowej nazwy plikowi wraz ze znalezionym w serwisie rozszerzeniem
             } else {
-                fileNameSuffix = uuid.toString();
+                fileNameSuffix = uuid.toString(); //nadanie losowej nazwy plikowi, bez rozszerzenia - nie zostało znalezione w bazie
             }
-            System.out.println("else " + fileNameSuffix);
         }
-
-        System.out.println("headery " + con.getHeaderFields());
-
-        System.out.println("pobiera");
         FileUtils.copyURLToFile(
                 url,
                 new File(configuration.getWorkingDirectory() + fileNameSuffix),
                 configuration.getConnectionTimeout(),
                 configuration.getReadTimeout());
 
-        System.out.println("pobralo");
         return fileNameSuffix;
     }
 

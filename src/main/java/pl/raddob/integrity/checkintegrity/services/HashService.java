@@ -3,6 +3,8 @@ package pl.raddob.integrity.checkintegrity.services;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.stereotype.Service;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
 
@@ -37,5 +39,9 @@ public class HashService {
             return false;
         }
     }
+
+
+
+
 
 }

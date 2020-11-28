@@ -15,6 +15,7 @@ public class CheckRequestFieldsService {
 
     public CheckRequestFieldsReturnType checkFields(CheckFileIntegrityRequest request) {
 
+        // Sprawdzenie czy request zawiera niezbędne pola
         if ((Strings.isNullOrEmpty(request.getAlgoritmType()) || request.getAlgoritmType().isBlank()) ||
                 (Strings.isNullOrEmpty(request.getAlgoritmValue()) || request.getAlgoritmValue().isBlank()) ||
                 (Strings.isNullOrEmpty(request.getAssetAddress()) || request.getAssetAddress().isBlank())) {
@@ -23,7 +24,7 @@ public class CheckRequestFieldsService {
             return new CheckRequestFieldsReturnType("Request jest prawidłowy", true);
         }
     }
-
+    // Sprawdzenie czy request zawiera oblusigwany przez system algorytm
     public CheckRequestAlgoritmType checkAlgoritmType(CheckFileIntegrityRequest request) {
         String algoritmType = request.getAlgoritmType();
         AlgoritmTypes algoritmTypeEnum;

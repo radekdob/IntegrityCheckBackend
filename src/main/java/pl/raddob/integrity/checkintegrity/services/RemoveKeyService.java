@@ -19,19 +19,19 @@ public class RemoveKeyService {
     }
 
 
-    public boolean removeKey(String keyId) {
+    public void removeKey(String keyId) {
         String directory = this.configuration.getWorkingDirectory();
-        boolean isWindows = this.configuration.isWindows();
+
         ProcessBuilder builder = new ProcessBuilder();
         builder.directory(new File(directory));
 
+        boolean isWindows = this.configuration.isWindows();
         if (isWindows) {
             builder.command("cmd.exe", "/c", "gpg --delete-key " + keyId);
         } else {
             builder.command("sh", "-c", "gpg --batch --yes --delete-key " + keyId);
         }
 
-        System.out.println(builder.command());
         try {
             Process process = builder.start();
 
@@ -41,14 +41,12 @@ public class RemoveKeyService {
             StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
             Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
 
-            int exitCode2 = process.waitFor();
-            //assert exitCode2 == 0;
-            System.out.println("\n RemoveKey : Exited with error code : " + exitCode2);
-            return exitCode2 == 0 ? true : false;
+            int exitCode = process.waitFor();
 
+            System.out.println("\n RemoveKey : Exited with error code : " + exitCode);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            return false;
+            // logger nie udalo sie usunac klucza ze zbioru kluczy gpg
+            System.out.println("Nie udalo sie usunac klucza");
         }
     }
 }

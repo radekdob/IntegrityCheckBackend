@@ -1,18 +1,14 @@
 package pl.raddob.integrity.checkintegrity.controllers;
-
-
 import org.bson.Document;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.raddob.integrity.checkintegrity.models.*;
-import pl.raddob.integrity.checkintegrity.services.CheckRequestFieldsService;
-import pl.raddob.integrity.checkintegrity.services.FileDownloaderService;
-import pl.raddob.integrity.checkintegrity.services.HashService;
-import pl.raddob.integrity.checkintegrity.services.PgpService;
+import pl.raddob.integrity.checkintegrity.services.*;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
-
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.Principal;
 
 
@@ -25,32 +21,20 @@ public class IntegrityController {
     private final FilesLocationConfiguration configuration;
     private final HashService hashService;
     private final PgpService pgpService;
+    private final DownloadedFileHistoryService downloadedFileHistoryService;
 
-    public IntegrityController(CheckRequestFieldsService checkRequestFieldsService, FileDownloaderService downloaderService, FilesLocationConfiguration configuration, HashService hashService, PgpService pgpService) {
+    public IntegrityController(CheckRequestFieldsService checkRequestFieldsService, FileDownloaderService downloaderService, FilesLocationConfiguration configuration, HashService hashService, PgpService pgpService, DownloadedFileHistoryService downloadedFileHistoryService) {
         this.checkRequestFieldsService = checkRequestFieldsService;
         this.downloaderService = downloaderService;
         this.configuration = configuration;
         this.hashService = hashService;
         this.pgpService = pgpService;
+        this.downloadedFileHistoryService = downloadedFileHistoryService;
     }
 
-
-    @GetMapping("1")
-    public String test(Principal principal) {
-        System.out.println(principal.toString());
-        return "protected OKOKO";
-
-    }
-
-    @GetMapping("2")
-    public Document test2(Principal principal) {
-        // return "not protected ok";
-        System.out.println(principal.toString());
-        return new Document("name", "Radek");
-    }
 
     @PostMapping("")
-    public ResponseEntity<Document> checkFileIntegrity(@RequestBody CheckFileIntegrityRequest request) throws IOException{
+    public ResponseEntity<?> checkFileIntegrity(@RequestBody CheckFileIntegrityRequest request, Principal principal) throws IOException {
 
 
         // 1. Sprawdzenie pól obiektu request
@@ -79,22 +63,16 @@ public class IntegrityController {
         VerifyFileResult verifyResult;
         switch (checkRequestAlgoritmType.getAlgoritm()) {
             case PGP:
-                System.out.println("PGP");
                 verifyResult = pgpService.verifyFile(request.getPublicKey(), request.getAlgoritmValue(), fileName);
                 break;
             case MD5:
-                System.out.println("MD5");
-                verifyResult = new VerifyFileResult(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText(), false);
-                Boolean result = hashService.md5Hash(fileName, request.getAlgoritmValue());
-                System.out.println(result);
+                verifyResult = hashService.md5Hash(fileName, request.getAlgoritmValue());
                 break;
             case SHA256:
-                verifyResult = new VerifyFileResult(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText(), false);
-                System.out.println("SHA256");
+                verifyResult = hashService.sha256Hash(fileName, request.getAlgoritmValue());
                 break;
             case SHA512:
-                verifyResult = new VerifyFileResult(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText(), false);
-                System.out.println("SHA512");
+                verifyResult = hashService.sha512Hash(fileName, request.getAlgoritmValue());
                 break;
             default:
                 verifyResult = new VerifyFileResult(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText(), false);
@@ -105,6 +83,16 @@ public class IntegrityController {
             return new ResponseEntity(new Document("message", verifyResult.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         //4.2 Weryfikacja przebiegła pomyślnie
-        return new ResponseEntity(new Document("message", verifyResult.getMessage()), HttpStatus.OK);
+        //4.3 Udostępnienie linku do zasobu lokalnego
+        try {
+            URL localLink = downloaderService.getLocalLinkToFile(fileName);
+            //4.4 Jeśli użytkownik jest zalogowany to pobrany plik zostaje zapisany w jego profilu
+            if (principal != null) {
+                downloadedFileHistoryService.addAssetInfoToUser(fileName, localLink, principal.getName());
+            }
+            return new ResponseEntity(new IntegrityCheckResponse(verifyResult.getMessage(), localLink), HttpStatus.OK);
+        } catch (MalformedURLException e) {
+            return new ResponseEntity(new IntegrityCheckResponse(Messages.VERIFY_INTEGRITY_SUCCESS_NO_LOCAL_LINK.getMessageText()), HttpStatus.OK);
+        }
     }
 }

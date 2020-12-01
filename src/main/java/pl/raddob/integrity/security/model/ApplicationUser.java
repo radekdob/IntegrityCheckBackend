@@ -1,4 +1,4 @@
-package pl.raddob.integrity.security;
+package pl.raddob.integrity.security.model;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -16,12 +16,12 @@ public class ApplicationUser {
 
     private String password;
 
-    private List<String> downloadedFilesNames;
+    private List<FileHistory> filesHistory;
 
-    public ApplicationUser(String username, String password, List<String> downloadedFilesNames) {
+    public ApplicationUser(String username, String password, List<FileHistory> filesHistory) {
         this.username = username;
         this.password = password;
-        this.downloadedFilesNames = downloadedFilesNames;
+        this.filesHistory = filesHistory;
     }
 
 
@@ -49,11 +49,11 @@ public class ApplicationUser {
         this.password = password;
     }
 
-    public List<String> getDownloadedFilesNames() {
-        return downloadedFilesNames;
+    public List<FileHistory> getFilesHistory() {
+        return filesHistory;
     }
 
-    public void setDownloadedFilesNames(List<String> downloadedFilesNames) {
-        this.downloadedFilesNames = downloadedFilesNames;
+    public void setFilesHistory(List<FileHistory> filesHistory) {
+        this.filesHistory = filesHistory;
     }
 }

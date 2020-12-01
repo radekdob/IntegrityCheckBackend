@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 
@@ -54,6 +57,8 @@ public class FileDownloaderService {
                 fileNameSuffix = uuid.toString(); //nadanie losowej nazwy plikowi, bez rozszerzenia - nie zostało znalezione w bazie
             }
         }
+
+
         FileUtils.copyURLToFile(
                 url,
                 new File(configuration.getWorkingDirectory() + fileNameSuffix),
@@ -61,6 +66,14 @@ public class FileDownloaderService {
                 configuration.getReadTimeout());
 
         return fileNameSuffix;
+    }
+
+
+
+    public URL getLocalLinkToFile(String filename) throws MalformedURLException {
+
+        var file = new File(this.configuration.getWorkingDirectory() + filename);
+        return file.toURI().toURL();
     }
 
 }

@@ -43,6 +43,7 @@ public class PgpService {
         // Importowanie klucza publicznego do programu GnuPG
         ImportKeySerivceReturnType importKeyResult = importKeyService.importKey(filename);
         if (!importKeyResult.isStatus()) {
+          deleteAllFiles(filename);
             return new VerifyFileResult(Messages.GPG_IMPORT_PUBLIC_KEY_ERROR.getMessageText(), false);
         }
 
@@ -53,14 +54,10 @@ public class PgpService {
         //Usuniecie plików zawierających klucz ubliczny oraz sygnaturę
         if (!verifyResult.isStatus() && !importKeyResult.getKeyId().isEmpty()) {
             removeKeyService.removeKey(importKeyResult.getKeyId());
-            deletePublicKeyFile(filename);
-            deleteSignatureFile(filename);
-            deleteFile(filename);
+            deleteAllFiles(filename);
             return new VerifyFileResult(verifyResult.getMessage(), false);
         } else if (!verifyResult.isStatus() && importKeyResult.getKeyId().isEmpty()) {
-            deletePublicKeyFile(filename);
-            deleteSignatureFile(filename);
-            deleteFile(filename);
+            deleteAllFiles(filename);
             return new VerifyFileResult(verifyResult.getMessage(), false);
         }
         // Weryfikacja powiodła się
@@ -69,8 +66,8 @@ public class PgpService {
             removeKeyService.removeKey(importKeyResult.getKeyId());
         }
         //Usuniecie plików zawierających klucz ubliczny oraz sygnaturę
-            deletePublicKeyFile(filename);
-            deleteSignatureFile(filename);
+        deletePublicKeyFile(filename);
+        deleteSignatureFile(filename);
 
         return new VerifyFileResult(verifyResult.getMessage(), true);
     }
@@ -87,33 +84,37 @@ public class PgpService {
         signatureWriter.close();
     }
 
-    private void deletePublicKeyFile(String filename)  {
+    private void deletePublicKeyFile(String filename) {
         String fullFileName = configuration.getWorkingDirectory() + filename + "PublicKey.txt";
         try {
             FileUtils.forceDelete(new File(fullFileName));
-        }catch (IOException e) {
-            System.out.println("nie udalo sie usunac");
+        } catch (IOException e) {
             //logger nie udalo sie usunac filename + "publickye.txt"
         }
     }
 
-    private void deleteSignatureFile(String filename)  {
+    private void deleteSignatureFile(String filename) {
         String fullFileName = configuration.getWorkingDirectory() + filename + "Signature.txt";
         try {
             FileUtils.forceDelete(new File(fullFileName));
-        }catch (IOException e) {
-            System.out.println("nie udalo sie usunac");
-            //logger nie udalo sie usunac filename + "signature.txt"
-        }
-    }
-    private void deleteFile(String filename)  {
-        String fullFileName = configuration.getWorkingDirectory() + filename;
-        try {
-            FileUtils.forceDelete(new File(fullFileName));
-        }catch (IOException e) {
-            System.out.println("nie udalo sie usunac");
+        } catch (IOException e) {
             //logger nie udalo sie usunac filename + "signature.txt"
         }
     }
 
+    private void deleteFile(String filename) {
+        String fullFileName = configuration.getWorkingDirectory() + filename;
+        try {
+            FileUtils.forceDelete(new File(fullFileName));
+        } catch (IOException e) {
+            //logger nie udalo sie usunac filename + "signature.txt"
+        }
+    }
+
+
+    private void deleteAllFiles(String filename) {
+        deleteFile(filename);
+        deleteSignatureFile(filename);
+        deletePublicKeyFile(filename);
+    }
 }

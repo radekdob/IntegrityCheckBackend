@@ -1,9 +1,13 @@
 package pl.raddob.integrity.checkintegrity.services;
 
 import com.google.common.base.Strings;
+import jdk.jshell.ImportSnippet;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.raddob.integrity.checkintegrity.models.ImportKeySerivceReturnType;
+import pl.raddob.integrity.checkintegrity.models.Messages;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
 import pl.raddob.integrity.configuration.StreamGobbler;
 
@@ -28,28 +32,26 @@ public class ImportKeyService {
 
     public ImportKeySerivceReturnType importKey(String filename) {
 
+        Logger logger = LoggerFactory.getLogger(ImportKeyService.class);
+
         String directory = this.configuration.getWorkingDirectory();
         String fullFileName = directory + filename + "PublicKey.txt";
 
+        //Tworzenie procesu, który uruchamia się w katalogu roboczym
         ProcessBuilder builder = new ProcessBuilder();
         builder.directory(new File(directory));
 
         boolean isWindows = this.configuration.isWindows();
         if (isWindows) {
-            builder.command("cmd.exe", "/c", "ping -n 3 google.com");
+            builder.command("cmd.exe", "/c", "gpg --import " + fullFileName);
         } else {
             builder.command("sh", "-c", "gpg --import " + fullFileName);
         }
 
         try {
             Process process = builder.start();
-/*
-            StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
-            Executors.newSingleThreadExecutor().submit(inputStreamGobbler);
 
-            StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
-            Executors.newSingleThreadExecutor().submit(errorStreamGobbler);*/
-
+            //Tworzenie wątków to zapisywania wyniku tekstowego działania sh/cmd
             ExecutorService newFixedThreadPool = Executors.newFixedThreadPool(2);
             Future<String> output = newFixedThreadPool.submit(() -> {
                 return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
@@ -59,25 +61,26 @@ public class ImportKeyService {
             });
             newFixedThreadPool.shutdown();
 
-
+            //wyniki tekstowe działania GnuPG
             String errorString = error.get();
             String successString = output.get();
 
+            //Jeżeli proces został bez błędów to exitCode == 0
             int exitCode = process.waitFor();
             process.destroy();
+
             if (exitCode == 0) {
+
+                // Wydobywanie z wyników tekstowych nowo dodanego (do zbioru kluczy GnuPG) klucza publicznego
                 String addedKeyId;
                 if (successString != null && !successString.isEmpty()) {
                     addedKeyId = successString.substring(9, 25);
-                    System.out.println("SUCCESS" + successString);
-
                 } else if (errorString != null && !errorString.isEmpty()) {
-                    System.out.println("ERROR " + errorString);
                     addedKeyId = errorString.substring(9, 25);
                 } else {
-                    System.out.println("else" + errorString + successString);
+                    //klucz zostal zaimportowany, lecz nie udalo sie uzyskac jego id
+                    logger.warn(Messages.GPG_IMPORT_PUBLIC_KEY_ID_ERROR.getMessageText());
                     return new ImportKeySerivceReturnType("", true);
-
                 }
                 return new ImportKeySerivceReturnType(addedKeyId, true);
 

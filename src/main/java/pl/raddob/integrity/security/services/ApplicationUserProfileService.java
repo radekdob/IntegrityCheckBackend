@@ -2,7 +2,7 @@ package pl.raddob.integrity.security.services;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import pl.raddob.integrity.security.ApplicationUserRepository;
+import pl.raddob.integrity.security.repositories.ApplicationUserRepository;
 import pl.raddob.integrity.security.model.ApplicationUser;
 
 @Service

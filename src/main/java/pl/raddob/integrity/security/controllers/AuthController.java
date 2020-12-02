@@ -1,6 +1,8 @@
 package pl.raddob.integrity.security.controllers;
 
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,13 +26,14 @@ public class AuthController {
 
 
     @GetMapping("")
-    public Document logIn() {
+    public Document logIn(Principal principal) {
+        Logger logger = LoggerFactory.getLogger(AuthController.class);
+        logger.info(Messages.LOGGER_USER_LOGGED_IN.getMessageText() + principal.getName());
         return new Document("status", "logged in");
     }
 
     @GetMapping("profile")
     public ResponseEntity<?> getUserProfile(Principal principal) {
-
         try {
             return new ResponseEntity(userProfileService.getUserProfile(principal.getName()),
                     HttpStatus.OK);

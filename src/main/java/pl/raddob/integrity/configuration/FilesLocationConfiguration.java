@@ -9,10 +9,6 @@ public class FilesLocationConfiguration {
     @Value("${working.directory: Hello world}")
     private String workingDirectory;
 
-    @Value("${file.name: file_to_check}")
-    private String fileName;
-
-
     @Value("${connection.timeout}")
     private int connectionTimeout;
 
@@ -35,12 +31,6 @@ public class FilesLocationConfiguration {
     public String getWorkingDirectory() {
         return workingDirectory;
     }
-
-
-    public String getFileName() {
-        return fileName;
-    }
-
 
 
     public boolean isWindows(){

@@ -1,10 +1,9 @@
 package pl.raddob.integrity.checkintegrity.services;
 
 import org.springframework.stereotype.Service;
-import pl.raddob.integrity.checkintegrity.interfaces.FileExtensionsRepository;
+import pl.raddob.integrity.checkintegrity.repositories.FileExtensionsRepository;
 import pl.raddob.integrity.checkintegrity.models.FileExtensions;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service

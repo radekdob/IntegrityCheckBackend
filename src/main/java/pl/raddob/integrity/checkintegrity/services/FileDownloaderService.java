@@ -71,7 +71,6 @@ public class FileDownloaderService {
 
 
     public URL getLocalLinkToFile(String filename) throws MalformedURLException {
-
         var file = new File(this.configuration.getWorkingDirectory() + filename);
         return file.toURI().toURL();
     }

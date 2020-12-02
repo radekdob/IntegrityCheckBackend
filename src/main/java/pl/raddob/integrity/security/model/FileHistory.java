@@ -28,4 +28,14 @@ public class FileHistory {
     public void setLocalLink(String localLink) {
         this.localLink = localLink;
     }
+
+    @Override
+    public String toString() {
+        return "FileHistory{" +
+                "filename='" + filename + '\'' +
+                ", localLink='" + localLink + '\'' +
+                '}';
+    }
+
+
 }

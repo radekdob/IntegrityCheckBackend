@@ -1,4 +1,4 @@
-package pl.raddob.integrity.security;
+package pl.raddob.integrity.security.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

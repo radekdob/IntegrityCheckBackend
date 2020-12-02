@@ -11,12 +11,10 @@ import pl.raddob.integrity.checkintegrity.services.ImportKeyService;
 import pl.raddob.integrity.checkintegrity.services.PgpService;
 import pl.raddob.integrity.checkintegrity.services.RemoveKeyService;
 import pl.raddob.integrity.checkintegrity.services.VerifySignatureService;
-import pl.raddob.integrity.configuration.FilesLocationConfiguration;
-import pl.raddob.integrity.security.ApplicationUserRepository;
+import pl.raddob.integrity.security.repositories.ApplicationUserRepository;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 
 @SpringBootApplication
 public class IntegrityApplication {

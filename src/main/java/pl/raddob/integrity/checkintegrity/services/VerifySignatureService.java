@@ -1,6 +1,8 @@
 package pl.raddob.integrity.checkintegrity.services;
 
 import com.google.common.base.Enums;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.raddob.integrity.checkintegrity.models.Messages;
 import pl.raddob.integrity.checkintegrity.models.VerifySignatureServiceReturnType;
@@ -24,8 +26,10 @@ public class VerifySignatureService {
 
 
     public VerifySignatureServiceReturnType verifySignature(String fileName) {
+
+        Logger logger = LoggerFactory.getLogger(VerifySignatureService.class);
+
         String directory = this.configuration.getWorkingDirectory();
-       // String fullFileName = this.configuration.getWorkingDirectory() + fileName;
         String signatureName = fileName + "Signature.txt";
 
         ProcessBuilder builder = new ProcessBuilder();
@@ -33,37 +37,39 @@ public class VerifySignatureService {
 
         boolean isWindows = this.configuration.isWindows();
         if (isWindows) {
-            builder.command("cmd.exe", "/c", "ping -n 3 google.com");
+            builder.command("cmd.exe", "/c", "gpg --verify " + signatureName + " " + fileName);
         } else {
             builder.command("sh", "-c", "gpg --verify " + signatureName + " " + fileName);
         }
         try {
             Process process = builder.start();
 
+            //StreamGobbler służy do wyświetlania wyniku działania procesu z GnuPG do konsoli
             StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
+            //Uruchomienie StreamGobblera w nowym wątku
             Executors.newSingleThreadExecutor().submit(inputStreamGobbler);
 
             StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
             Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
 
             int exitCode = process.waitFor();
-            System.out.println("\n Verify : Exited with error code : " + exitCode);
+            process.destroy();
 
             VerifySignatureServiceReturnType returnType;
             switch (exitCode) {
                 case 0:
                     returnType = new VerifySignatureServiceReturnType(Messages.VERIFY_SYGNATURE_SUCCESS.getMessageText(), true);
                     break;
-                case 2:
+                case 2: //GnuPG wraca exitCode == 2 jeśli klucz publiczny nie pasuje do sygnatury
                     returnType = new VerifySignatureServiceReturnType(VERIFY_SYGNATURE_WRONG_PUBLIC_KEY.getMessageText(), false);
                     break;
                 default:
+                    logger.warn(Messages.VERIFY_SYGNATURE_ERROR_OCCURED.getMessageText()+  "błąd numer"  + exitCode);
                     returnType = new VerifySignatureServiceReturnType(Messages.VERIFY_SYGNATURE_ERROR_OCCURED.getMessageText()+  "błąd numer"  + exitCode, false);
                     break;
             }
             return returnType;
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
             return new VerifySignatureServiceReturnType(Messages.VERIFY_SYGNATURE_ERROR_OCCURED.getMessageText(), false);
         }
 

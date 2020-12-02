@@ -1,14 +1,13 @@
 package pl.raddob.integrity.checkintegrity.services;
-
-
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.raddob.integrity.checkintegrity.models.ImportKeySerivceReturnType;
 import pl.raddob.integrity.checkintegrity.models.Messages;
 import pl.raddob.integrity.checkintegrity.models.VerifyFileResult;
 import pl.raddob.integrity.checkintegrity.models.VerifySignatureServiceReturnType;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
-
 import java.io.*;
 
 
@@ -29,9 +28,12 @@ public class PgpService {
 
     public VerifyFileResult verifyFile(String publicKey, String signature, String filename) throws IOException {
 
+        Logger logger = LoggerFactory.getLogger(PgpService.class);
+
         try {
             createPublicKeyFile(publicKey, filename);
         } catch (IOException e) {
+            logger.warn(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText() + filename);
             return new VerifyFileResult(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText(), false);
         }
         try {
@@ -43,7 +45,7 @@ public class PgpService {
         // Importowanie klucza publicznego do programu GnuPG
         ImportKeySerivceReturnType importKeyResult = importKeyService.importKey(filename);
         if (!importKeyResult.isStatus()) {
-          deleteAllFiles(filename);
+            deleteAllFiles(filename);
             return new VerifyFileResult(Messages.GPG_IMPORT_PUBLIC_KEY_ERROR.getMessageText(), false);
         }
 
@@ -85,29 +87,32 @@ public class PgpService {
     }
 
     private void deletePublicKeyFile(String filename) {
+        Logger logger = LoggerFactory.getLogger(PgpService.class);
         String fullFileName = configuration.getWorkingDirectory() + filename + "PublicKey.txt";
         try {
             FileUtils.forceDelete(new File(fullFileName));
         } catch (IOException e) {
-            //logger nie udalo sie usunac filename + "publickye.txt"
+            logger.warn(Messages.REMOVE_FILE_ERROR.getMessageText() + fullFileName);
         }
     }
 
     private void deleteSignatureFile(String filename) {
+        Logger logger = LoggerFactory.getLogger(PgpService.class);
         String fullFileName = configuration.getWorkingDirectory() + filename + "Signature.txt";
         try {
             FileUtils.forceDelete(new File(fullFileName));
         } catch (IOException e) {
-            //logger nie udalo sie usunac filename + "signature.txt"
+            logger.warn(Messages.REMOVE_FILE_ERROR.getMessageText() + fullFileName);
         }
     }
 
     private void deleteFile(String filename) {
+        Logger logger = LoggerFactory.getLogger(PgpService.class);
         String fullFileName = configuration.getWorkingDirectory() + filename;
         try {
             FileUtils.forceDelete(new File(fullFileName));
         } catch (IOException e) {
-            //logger nie udalo sie usunac filename + "signature.txt"
+            logger.warn(Messages.REMOVE_FILE_ERROR.getMessageText() + fullFileName);
         }
     }
 

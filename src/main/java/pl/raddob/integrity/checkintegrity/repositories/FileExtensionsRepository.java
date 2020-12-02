@@ -1,4 +1,4 @@
-package pl.raddob.integrity.checkintegrity.interfaces;
+package pl.raddob.integrity.checkintegrity.repositories;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;

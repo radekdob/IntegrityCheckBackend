@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.raddob.integrity.checkintegrity.models.*;
 import pl.raddob.integrity.checkintegrity.services.*;
-import pl.raddob.integrity.configuration.FilesLocationConfiguration;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,15 +17,13 @@ public class IntegrityController {
 
     private final CheckRequestFieldsService checkRequestFieldsService;
     private final FileDownloaderService downloaderService;
-    private final FilesLocationConfiguration configuration;
     private final HashService hashService;
     private final PgpService pgpService;
     private final DownloadedFileHistoryService downloadedFileHistoryService;
 
-    public IntegrityController(CheckRequestFieldsService checkRequestFieldsService, FileDownloaderService downloaderService, FilesLocationConfiguration configuration, HashService hashService, PgpService pgpService, DownloadedFileHistoryService downloadedFileHistoryService) {
+    public IntegrityController(CheckRequestFieldsService checkRequestFieldsService, FileDownloaderService downloaderService, HashService hashService, PgpService pgpService, DownloadedFileHistoryService downloadedFileHistoryService) {
         this.checkRequestFieldsService = checkRequestFieldsService;
         this.downloaderService = downloaderService;
-        this.configuration = configuration;
         this.hashService = hashService;
         this.pgpService = pgpService;
         this.downloadedFileHistoryService = downloadedFileHistoryService;

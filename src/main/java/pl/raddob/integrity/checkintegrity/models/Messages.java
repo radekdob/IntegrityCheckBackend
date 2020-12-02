@@ -30,7 +30,8 @@ public enum Messages {
 
     LOGGER_USER_LOGGED_IN("Użytkownik został zalogowany: "),
 
-    REMOVE_FILE_ERROR("Nie udało się usunąć pliku: ");
+    REMOVE_FILE_ERROR("Nie udało się usunąć pliku: "),
+    REMOVE_KEY_ERROR("Nie udało się usunąć klucza");
 
 
 

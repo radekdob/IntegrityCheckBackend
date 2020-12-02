@@ -1,17 +1,13 @@
 package pl.raddob.integrity.checkintegrity.services;
-
-import com.google.common.base.Enums;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.raddob.integrity.checkintegrity.models.Messages;
 import pl.raddob.integrity.checkintegrity.models.VerifySignatureServiceReturnType;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
-import pl.raddob.integrity.configuration.StreamGobbler;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Executors;
+
 
 import static pl.raddob.integrity.checkintegrity.models.Messages.VERIFY_SYGNATURE_WRONG_PUBLIC_KEY;
 
@@ -43,15 +39,6 @@ public class VerifySignatureService {
         }
         try {
             Process process = builder.start();
-
-            //StreamGobbler służy do wyświetlania wyniku działania procesu z GnuPG do konsoli
-            StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
-            //Uruchomienie StreamGobblera w nowym wątku
-            Executors.newSingleThreadExecutor().submit(inputStreamGobbler);
-
-            StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
-            Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
-
             int exitCode = process.waitFor();
             process.destroy();
 

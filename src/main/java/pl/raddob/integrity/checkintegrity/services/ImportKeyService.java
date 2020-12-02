@@ -1,7 +1,4 @@
 package pl.raddob.integrity.checkintegrity.services;
-
-import com.google.common.base.Strings;
-import jdk.jshell.ImportSnippet;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,12 +6,8 @@ import org.springframework.stereotype.Service;
 import pl.raddob.integrity.checkintegrity.models.ImportKeySerivceReturnType;
 import pl.raddob.integrity.checkintegrity.models.Messages;
 import pl.raddob.integrity.configuration.FilesLocationConfiguration;
-import pl.raddob.integrity.configuration.StreamGobbler;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +36,7 @@ public class ImportKeyService {
 
         boolean isWindows = this.configuration.isWindows();
         if (isWindows) {
-            builder.command("cmd.exe", "/c", "gpg --import " + fullFileName);
+            builder.command("cmd", "/c", "gpg --import " + fullFileName);
         } else {
             builder.command("sh", "-c", "gpg --import " + fullFileName);
         }

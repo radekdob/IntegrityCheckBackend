@@ -33,6 +33,7 @@ public class PgpService {
         try {
             createPublicKeyFile(publicKey, filename);
         } catch (IOException e) {
+            e.printStackTrace();
             logger.warn(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText() + filename);
             return new VerifyFileResult(Messages.CREATE_PUBLIC_KEY_FILE_ERROR.getMessageText(), false);
         }
